@@ -77,7 +77,7 @@ public class QinYanController {
 
     @UserLoginToken
     @GetMapping("/getSearchResult")
-    public Result searchResult(@RequestParam("keyWords")String key){
+    public Result searchResult(@RequestParam("keyWords")String key) throws Exception{
         List<Detail> detailList=detailService.search(key);
         if(detailList.size()>0){
             return Result.sucess(detailList);

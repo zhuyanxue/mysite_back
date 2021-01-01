@@ -1,14 +1,26 @@
 package com.mysite.api.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.mysite.api.dao.DetailDao;
 import com.mysite.api.es.DetailESDao;
 import com.mysite.api.pojo.Detail;
 import com.mysite.api.pojo.MinFrame;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
@@ -21,10 +33,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DetailService {
@@ -37,27 +47,71 @@ public class DetailService {
     @Autowired
     DetailESDao detailESDao;
 
-    //查询方法
-    public List<Detail> search(String searchKey){
-        //detailESDao.deleteAll();
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        queryBuilder.withQuery(QueryBuilders.matchQuery("details", searchKey));
-        //Sort.Order order=new Sort.Order(Sort.Direction.DESC, "id");
-        //Pageable pageable =PageRequest.of(0,20,Sort.by(order));
-        //queryBuilder.withPageable(pageable);
-        Page<Detail> page=detailESDao.search(queryBuilder.build());
+    @Autowired
+    private RestHighLevelClient restHighLevelClient;
+
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchTemplate;
 
 
-        List<Detail> returnList= new ArrayList<>();
-        returnList.addAll(page.getContent());
-        //List<Detail> detailList=page.getContent();
-        //List<Detail> endList=new ArrayList(Arrays.asList(detailList));
-        //排除已经锁定
-       /* for(Detail detail:returnList){
-            if(detail.getMinFrame().getBlock().getFrame().getApp().getStatus().equals("解锁")){
-                returnList.remove(detail);
+    //高亮查询
+    public List<Detail> search(String searchKey) throws Exception{
+
+        //1.构建查询
+        SearchRequest searchRequest = new SearchRequest("mysite");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
+        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+
+        //精准匹配
+        //TermQueryBuilder termQueryBuilder=QueryBuilders.termQuery("title",searchKey);,不会进行分词查询
+        //分词查询，需要用matchquery。
+        MatchQueryBuilder matchQueryBuilder=QueryBuilders.matchQuery("title",searchKey);
+        sourceBuilder.query(matchQueryBuilder);
+
+        //高亮
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title");
+
+        highlightBuilder.requireFieldMatch(false);//多高亮，设false
+        highlightBuilder.preTags("<em style='color:red;font-style: normal;'>");
+        highlightBuilder.postTags("</em>");
+        sourceBuilder.highlighter(highlightBuilder);
+
+        //2.执行搜索
+        searchRequest.source(sourceBuilder);
+        SearchResponse searchResponse=restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        //3.解析结果
+       ArrayList<Map<String,Object>> list=new ArrayList<>();
+
+        for (SearchHit hit : searchResponse.getHits().getHits()) {
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            HighlightField title = highlightFields.get("title");
+
+            //原来的结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            //替换字段
+            if (title != null) {
+                Text[] fragments = title.fragments();
+                String newTitle = "";
+                for (Text fragment : fragments) {
+                    newTitle += fragment;
+                }
+                sourceAsMap.put("title", newTitle);
             }
-        };*/
+
+            list.add(sourceAsMap);
+        }
+
+        //转为list<T>返回
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.addAll(list);
+        List<Detail> returnList=jsonArray.toJavaList(Detail.class);
+
+
         Iterator<Detail> iterator = returnList.iterator();
 
         while(iterator.hasNext()){
@@ -78,6 +132,7 @@ public class DetailService {
 
     //初始化数据。
     public void initESData(){
+        elasticsearchTemplate.putMapping(Detail.class);
             List<Detail> detailList=detailDao.findAll();
             for(Detail detail:detailList){
                 detailESDao.save(detail);

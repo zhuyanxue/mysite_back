@@ -3,6 +3,8 @@ package com.mysite.api.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,16 +15,19 @@ import java.util.Set;
 @Table(name="detail")
 @Data
 @JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
-@Document(indexName = "api",type = "mysite")
+@Document(indexName = "mysite")
 public class Detail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_max_word")
     private int id;
 
+    @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_max_word")
     @Column(name = "title")
     private String title;
 
+    @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_max_word")
     @Column(name = "details")
     private String details;
 

@@ -1,10 +1,12 @@
 # mysite_back
-mysite网站后端接口，由springboot实现，并使用到了一些技术，包括：elasticsearch、shiro、redis等。
+mysite网站后端接口，由springboot实现。
+
+# quickStart
 
 # elasticsearch
 >###功能：用于网站内容的查询。使用ik分词器，对搜索结果进行高亮显示。
 ####实现：
-1、根据maven引入的依赖，官网下载对应的elasticsearch版本（6.8.3），解压——》下载Head插件——》es进行跨域配置——》下载ik分词器
+1、 根据maven引入的依赖，官网下载对应的elasticsearch版本（6.8.3），解压——》下载Head插件——》es进行跨域配置——》下载ik分词器
 ，放到插件包下。——》测试head插件和ik分词器。  
 2、springboot集成elasticsearch  
 （1）编写ElasticSearch配置类。  

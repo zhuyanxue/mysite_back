@@ -7,11 +7,12 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-
+/*
+ 静态资源配置，文件上传目录。
+ */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    //静态资源配置
     @Value("${file.staticAccessPath}")
     private String staticAccessPath;
     @Value("${file.uploadFolder}")

@@ -2,6 +2,9 @@ package com.mysite.api.config;
 
 import lombok.Data;
 
+/*
+api返回结果封装
+ */
 @Data
 public class Result {
     public static String SUCCESS_CODE="0000";//成功
@@ -24,12 +27,12 @@ public class Result {
         return new Result(SUCCESS_CODE,null,null);
     }
 
-    //2、成功返回，有数据：查询
+    //2、成功返回，有数据：查询调用
     public static Result sucess(Object data){
         return new Result(SUCCESS_CODE,null,data);
     }
 
-    //2、成功返回，有数据。token+id
+    //2、成功返回，有数据。token+id调用
     public static Result sucess(Object data,String message){
         return new Result(SUCCESS_CODE,message,data);
     }

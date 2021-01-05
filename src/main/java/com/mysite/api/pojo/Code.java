@@ -13,7 +13,7 @@ import java.util.Date;
 @Table(name="code")
 @Data
 @AllArgsConstructor //所有参数构造方法
-@NoArgsConstructor  //无参数、
+@NoArgsConstructor  //无参数
 @JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
 public class Code{
     @Id

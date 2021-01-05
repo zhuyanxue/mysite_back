@@ -19,11 +19,7 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.60</version>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -68,7 +64,7 @@
             <version>2.6</version>
         </dependency>
 
-        <!-- 用此插件，不用写get和set -->
+        <!-- 生产get和set -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -87,6 +83,13 @@
             </exclusions>
         </dependency>
 
+        <!-- json转换 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.60</version>
+        </dependency>
+
         <!-- 文件上传 -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -99,7 +102,7 @@
             <version>1.3.1</version>
         </dependency>
 
-        <!-- Jwt使用 -->
+        <!-- Jwt使用，密码加密 -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>

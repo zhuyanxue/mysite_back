@@ -5,10 +5,13 @@ import com.mysite.api.config.Result;
 import com.mysite.api.pojo.*;
 import com.mysite.api.service.*;
 import com.mysite.api.utils.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Api("mysite所有接口，请按照以下分类查看接口")
 //做rest风格的数据返回
 @RestController
 @RequestMapping("/api")   //访问基址
@@ -75,6 +79,14 @@ public class QinYanController {
     @Value("${file.repalceurl}")
     private String repalceUrl;
 
+    @ApiOperation("补充swagger实体类显示")
+    @UserLoginToken
+    @GetMapping("/ShowSwaggerPojoWithNoScan")
+    public Result getModel(@RequestBody Code code,@RequestBody DeskImg deskImg,@RequestBody Footer footer){
+        return Result.sucess();
+    }
+
+    @ApiOperation(value = "使用elasticsearch搜索，显示高亮结果",tags = "搜索")
     @UserLoginToken
     @GetMapping("/getSearchResult")
     public Result searchResult(@RequestParam("keyWords")String key) throws Exception{
@@ -85,6 +97,8 @@ public class QinYanController {
             return Result.fail("未查到相关数据");
         }
     }
+
+    @ApiOperation(value = "清空elasticsearch文档数据，再重新初始化，避免数据冗余",tags = "搜索")
     @UserLoginToken
     @PostMapping("/deleteGetAllEs")
     public Result deleteAndGet(){
@@ -92,12 +106,13 @@ public class QinYanController {
         return Result.sucess();
     }
     /*==========================================   底部   ====================================================*/
+    @ApiOperation(value = "新增一条页脚信息，并设置状态值为1（显示）",tags = "页脚信息")
     @UserLoginToken
     @PostMapping("/newFooter")
     public Result newFooter(@RequestParam("content")String content){
         Footer footer=new Footer();
         footer.setContent(content);
-        List<Footer> footerList=footerService.findByStatus(1);//所有1的
+        List<Footer> footerList=footerService.findByStatus(1);//所有1（显示）
         for(Footer footer1:footerList){
             footer1.setStatus(0);//全置0
         };
@@ -106,6 +121,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "拿到状态值为1的一条页脚信息",tags = "页脚信息")
     @UserLoginToken
     @GetMapping("/getFooterOne")
     public Result findFooterOne(){
@@ -116,6 +132,8 @@ public class QinYanController {
             return Result.fail("未找到相关底部数据");
         }
     }
+
+    @ApiOperation(value = "获得所有页脚数据记录",tags = "页脚信息")
     @UserLoginToken
     @GetMapping("/getAllFooter")
     public Result findAllFooters(){
@@ -123,6 +141,7 @@ public class QinYanController {
         return Result.sucess(footerList);
     }
 
+    @ApiOperation(value = "删除页脚信息",tags = "页脚信息")
     @UserLoginToken
     @DeleteMapping("/deleteFooter")
     public Result delteFooter(@RequestParam("id")int id){
@@ -130,6 +149,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "设置页脚信息显示，置状态为1",tags = "页脚信息")
     @UserLoginToken
     @PutMapping("/setStatusOne")
     public Result setTopFooter(@RequestParam("id")int id){
@@ -147,6 +167,7 @@ public class QinYanController {
 
 
     /*==========================================   壁纸    ====================================================*/
+    @ApiOperation(value = "上传壁纸，并显示",tags = "壁纸")
     @UserLoginToken
     @PostMapping("/saveDeskImg")
     public Result saveDeskImg(@RequestParam("url")String url){
@@ -165,6 +186,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "查找所有壁纸",tags = "壁纸")
     @UserLoginToken
     @GetMapping("/findAllDeskImg")
     public Result findAllDeskImg(){
@@ -176,6 +198,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "查找正在显示的壁纸",tags = "壁纸")
     @UserLoginToken
     @GetMapping("/getStatusDeskImg")
     public Result getSetDeskImg(){
@@ -188,6 +211,7 @@ public class QinYanController {
      }
     }
 
+    @ApiOperation("未被调用的接口")
     @UserLoginToken
     @PutMapping("/updateDeskImg")
     public Result updataDeskImg(@RequestParam("id")int id){
@@ -213,6 +237,7 @@ public class QinYanController {
 
 
     /*==========================================   笔记    ====================================================*/
+    @ApiOperation(value = "新增笔记",tags = "笔记")
     @UserLoginToken
     @PostMapping("/newRealNote")
     public Result NewNote(@RequestParam("content")String content,@RequestParam("uid")int uid,@RequestParam("did")int did){
@@ -228,6 +253,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "删除笔记",tags = "笔记")
     @UserLoginToken
     @DeleteMapping("/deleteNote")
     public Result deleteNote(@RequestParam("nid")int nid){
@@ -235,6 +261,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "编辑笔记",tags = "笔记")
     @UserLoginToken
     @PutMapping("/editSaveNote")
     public Result editNoteSave(@RequestParam("nid")int nid,@RequestParam("content")String content){
@@ -246,6 +273,7 @@ public class QinYanController {
 
 
     /*==========================================   详情    ====================================================*/
+    @ApiOperation(value = "新增主题和内容",tags = "详情")
     @UserLoginToken
     @PostMapping("/newSubmitDetail")
     public Result newDetail(@RequestParam("title")String title,@RequestParam("details")String details,@RequestParam("mfid")int mfid){
@@ -259,6 +287,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "编辑内容时，删除已上传的图片",tags = "详情")
     @UserLoginToken
     @PostMapping("/detaleOutImgs")
     public Result deleteOutImgs(@RequestBody String dImgs){
@@ -280,6 +309,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "拿到所属小导航下所有详情数据",tags = "详情")
     @UserLoginToken
     @GetMapping("/getAllDetails")
     public Result getAllDetailByMin(@RequestParam("mfid")int mfid){
@@ -292,6 +322,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "删除详情记录",tags = "详情")
     @UserLoginToken
     @DeleteMapping("/deleteDetail")
     public Result deleteDetail(@RequestParam("id")int id){
@@ -299,7 +330,7 @@ public class QinYanController {
         detailService.deleteDetail(id);
         return Result.sucess();
     }
-
+    @ApiOperation(value = "编辑详情记录，保存",tags = "详情")
     @UserLoginToken
     @PutMapping("/saveEditDetail")
     public Result saveEditDetail(@RequestParam("id")int id,@RequestParam("title")String title,@RequestParam("details")String details){
@@ -311,6 +342,7 @@ public class QinYanController {
     }
 
     /*==========================================   视频    ====================================================*/
+    @ApiOperation(value = "上传视频",tags = "视频")
     @UserLoginToken
     @PostMapping("/saveVideo")
     public Result saveUpload(@RequestParam("bid")int bid,@RequestParam("videoUrl")String videoUrl,@RequestParam("name")String name,@RequestParam("status")int status){
@@ -324,6 +356,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "拿到展示的视频记录，状态值为1",tags = "视频")
     @UserLoginToken
     @GetMapping("/getCanVideo")
     public Result getVideo(@RequestParam("bid")int bid){
@@ -344,6 +377,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "返回视频所属的模块",tags = "视频")
     @UserLoginToken
     @GetMapping("/inGetBlock")
     public Result getInVideo(@RequestParam("bid")int bid){
@@ -351,6 +385,7 @@ public class QinYanController {
         return Result.sucess(block);
     }
 
+    @ApiOperation(value = "获得指定模块下的所有视频数据",tags = "视频")
     @UserLoginToken
     @GetMapping("/getAllVideoByBlock")
     public Result getAllVideos(@RequestParam("bid")int bid){
@@ -364,6 +399,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "删除视频",tags = "视频")
     @UserLoginToken
     @DeleteMapping("/deleteVideo")
     public Result deleteVideo(@RequestParam("vid")int vid){
@@ -385,6 +421,7 @@ public class QinYanController {
         return Result.sucess(resultInfo);
     }
 
+    @ApiOperation(value = "设置视频作为显示，将状态值由0置1",tags = "视频")
     @UserLoginToken
     @PutMapping("/editTopVideo")
     public Result topVideo(@RequestParam("vid")int vid,@RequestParam("bid")int bid){
@@ -399,6 +436,7 @@ public class QinYanController {
         return Result.sucess();
     }
     /*==========================================   小导航   ====================================================*/
+    @ApiOperation(value = "通过所属模块拿到所有小导航",tags = "小导航")
     @UserLoginToken
     @GetMapping("/getMinFrame")
     public Result findAllMinFrameBlock(@RequestParam("bid")int bid){
@@ -410,7 +448,7 @@ public class QinYanController {
             return Result.fail("此模块还尚未添加数据！");
         }
     }
-
+    @ApiOperation(value = "新增一条小导航记录",tags = "小导航")
     @UserLoginToken
     @PostMapping("/submitMinFrame")
     public Result newMinFrame(@RequestParam("mintitle")String minTitle,@RequestParam("bid")int bid){
@@ -422,6 +460,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "删除一条小导航记录",tags = "小导航")
     @UserLoginToken
     @DeleteMapping("/deleteMinFrame")
     public Result deleteMinFrame(@RequestParam("mid")int mid){
@@ -429,6 +468,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "编辑一条小导航记录",tags = "小导航")
     @UserLoginToken
     @PutMapping("/editMinFrame")
     public Result updataMinFrame(@RequestParam("id")int id,@RequestParam("minTitle")String minTitle){
@@ -439,7 +479,8 @@ public class QinYanController {
     }
 
 
-    /*==========================================   块    ====================================================*/
+    /*==========================================   模块    ====================================================*/
+    @ApiOperation(value = "新增一个模块",tags = "模块")
     @UserLoginToken
     @PostMapping("/newBlockSave")
     public  Result newBlock(@RequestParam("frameid")int fid,@RequestParam("title")String title,@RequestParam("describes")String describe,@RequestParam("progress")int progress){
@@ -453,6 +494,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "查询导航下的所有模块",tags = "模块")
     @UserLoginToken
     @GetMapping("/defaultGetBlock")
     public Result findAllByFrame(@RequestParam("fid")int fid){
@@ -465,6 +507,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "删除一个模块",tags = "模块")
     @UserLoginToken
     @DeleteMapping("/deleteBlock")
     public Result deleteBlock(@RequestParam("bid")int bid){
@@ -472,6 +515,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "编辑一个模块",tags = "模块")
     @UserLoginToken
     @PutMapping("/updataBlock")
     public Result upateBlock(@RequestParam("id")int id,@RequestParam("title")String title,@RequestParam("describes")String describes){
@@ -485,6 +529,7 @@ public class QinYanController {
     /*==========================================  导航    ====================================================*/
 
     //参数的传递结束，若用requestparam接收，则应是application/x-www-form-urlencoded，qs转换。若用requestbody,则该是application/json。
+    @ApiOperation(value = "新增一条导航记录",tags = "导航")
     @UserLoginToken
     @PostMapping("/newFrame")
     public Result newFrame(@RequestParam("frameName")String frameName,@RequestParam("appid")int id ){
@@ -496,6 +541,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "查询所属应用下的所有导航",tags = "导航")
     @UserLoginToken
     @GetMapping("/getAllFrames")
     public Result getAllFrame(@RequestParam("appid")int id){
@@ -508,6 +554,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "删除一条导航记录",tags = "导航")
     @UserLoginToken
     @DeleteMapping("/deleteRealFrame/{id}")
     public Result deleteFrame(@PathVariable("id")int id){
@@ -515,6 +562,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
+    @ApiOperation(value = "获得一条导航记录",tags = "导航")
     @UserLoginToken
     @GetMapping("/getOneInfo")
     public Result getInfo(@RequestParam("id")int id){
@@ -526,6 +574,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "更新一条导航记录",tags = "导航")
     @UserLoginToken
     @PutMapping("/updataFrame")
     public Result updateFrame(@RequestBody Frame frame){
@@ -534,6 +583,7 @@ public class QinYanController {
     }
 
     /*==========================================  用户   ====================================================*/
+    @ApiOperation(value = "登录",tags = "用户")
     @PassToken  //去掉token验证
     @PostMapping("/login")
     public Result login(@RequestBody Users users){
@@ -552,6 +602,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "注册",tags = "用户")
     @PassToken
     @PostMapping("/submitRegister")
     public Result register(@RequestBody Users users){
@@ -574,6 +625,8 @@ public class QinYanController {
         userService.save(users);
         return Result.sucess();
     };
+
+    @ApiOperation(value = "判断用户名是否已被使用",tags = "用户")
     @PassToken
     @PostMapping("/judgeName")
     public Result seeIsName(@RequestParam("name")String name){
@@ -596,6 +649,7 @@ public class QinYanController {
     }
 
     //重置密码
+    @ApiOperation(value = "重置密码",tags = "用户")
     @PassToken
     @PostMapping("/subNewPassword")
     public Result setNewPassWord(@RequestParam("email")String email,@RequestParam("password")String password,HttpServletRequest request){
@@ -631,6 +685,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "生成二维码工具",tags = "用户")
     @PassToken  //去掉token验证
     @PostMapping("/newUrlUserImg")
     public Result newUserMyImg(@RequestParam("content")String contents){
@@ -666,6 +721,7 @@ public class QinYanController {
         javaMailSender.setJavaMailProperties(properties);
     }
 
+    @ApiOperation(value = "发送邮箱验证码",tags = "用户")
     @PassToken
     @PostMapping("/sendIdentifyCode")
     public Result sendCode(@RequestParam("emailAddress")String email){
@@ -684,18 +740,33 @@ public class QinYanController {
             //验证码
             String orignCode = String.format("%04d", new Random().nextInt(9999));//四位随机验证码
             StringBuilder sb = new StringBuilder();
-            String sendContent = "您好！您重置密码的验证码是：<a>【" + orignCode + "】</a>，此验证码五分钟内有效！";
+            String sendContent = "您好！您重置密码的验证码是：【" + orignCode + "】，此验证码五分钟内有效！";
             sb.append(sendContent);
 
             //发送验证码
             try {
-                MimeMessage message = javaMailSender.createMimeMessage();
+               /*
+               MimeMessage message = javaMailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom("1789204734@qq.com", "1789204734");
                 helper.setTo(email);
                 helper.setSubject("青彦网【重置密码】");
                 helper.setText(sb.toString(), true);
-                javaMailSender.send(message);
+                javaMailSender.send(message);*/
+
+                JavaMailSenderImpl mailSender=new JavaMailSenderImpl();
+                mailSender.setHost("smtp.163.com");
+                mailSender.setUsername("13658766721@163.com");
+                mailSender.setPassword("ZOLMZPMAVKMQPAFO");
+
+                SimpleMailMessage messages = new SimpleMailMessage();
+                messages.setFrom("13658766721@163.com");
+                messages.setTo(email);
+                messages.setSubject("青彦网【重置密码】");//主题
+                messages.setText(sb.toString());//正文
+                mailSender.send(messages);
+
+
             } catch (Exception e) {
                 logger.error("邮件发送失败", e.getMessage());
                 e.printStackTrace();
@@ -711,6 +782,7 @@ public class QinYanController {
     }
 
     //校验验证码
+    @ApiOperation(value = "验证邮箱验证码是否正确",tags = "用户")
     @PassToken
     @PostMapping("/submitCode")
     public Result seeCode(@RequestParam("code")String code){
@@ -731,7 +803,7 @@ public class QinYanController {
         }
     }
 
-
+    @ApiOperation(value = "查找指定用户",tags = "管理")
     @UserLoginToken  //需要token验证
     @GetMapping("/searchResultName")
     public Result searchByNameKey(@RequestParam("key")String key){
@@ -752,6 +824,7 @@ public class QinYanController {
         }
     }
 
+    @ApiOperation(value = "设置用户角色",tags = "管理")
     @UserLoginToken  //需要token验证
     @PostMapping("/changeUserStatus")
     public Result setPutStatus(@RequestParam("changeRole")String role,@RequestParam("id")int id){
@@ -761,7 +834,7 @@ public class QinYanController {
         return Result.sucess();
     }
 
-
+    @ApiOperation(value = "更新用户邮箱",tags = "管理")
     @UserLoginToken  //需要token验证
     @PostMapping("/updateUserEmail")
     public Result changeEmail(@RequestParam("id")int id,@RequestParam("email")String email){
@@ -774,6 +847,7 @@ public class QinYanController {
 
     /*==========================================  应用    ====================================================*/
     //查找所有app
+    @ApiOperation(value = "查找指定所有应用",tags = "应用")
     @UserLoginToken  //需要token验证
     @GetMapping("/getAllAapp")
     public Result getAllApp(){
@@ -785,6 +859,7 @@ public class QinYanController {
         }
     }
     //加解锁
+    @ApiOperation(value = "对应用加锁和解锁",tags = "应用")
     @UserLoginToken
     @PostMapping("/suoapp")
     public Result suoApp(@RequestParam("id")int id){
@@ -801,6 +876,7 @@ public class QinYanController {
 
 
     //保存应用
+    @ApiOperation(value = "新增一个应用",tags = "应用")
     @UserLoginToken
     @PostMapping("/saveApp")
     public Result saveApp(@RequestParam("appName")String appName,@RequestParam("img")String img,@RequestParam("userId")int userid){
@@ -815,6 +891,7 @@ public class QinYanController {
     }
 
     //删除壁纸
+    @ApiOperation(value = "删除壁纸",tags = "壁纸")
     @UserLoginToken
     @DeleteMapping("/deleteDeskImg")
     public Result deleteDeskImg(@RequestParam("id")int id,@RequestParam("imgurl")String imgurl){
@@ -832,7 +909,7 @@ public class QinYanController {
         deskImgService.deleteDeskImgById(id);
         return Result.sucess(resultInfo);
     }
-
+    @ApiOperation(value = "获得应用名称",tags = "应用")
     @UserLoginToken
     @GetMapping("/getAppName")
     public Result findAppName(@RequestParam("id")int id){
@@ -843,6 +920,7 @@ public class QinYanController {
 
 
     //删除应用
+    @ApiOperation(value = "删除一个应用",tags = "应用")
     @UserLoginToken
     @DeleteMapping("/deleteApp/{id}")
     public Result deleteApp(@PathVariable("id")int id){
@@ -863,6 +941,7 @@ public class QinYanController {
         return Result.sucess(resultInfo);
     }
 
+    @ApiOperation(value = "删除二维码图片",tags = "用户")
     @PassToken  //去掉token验证
     @PostMapping("/delteInfoImg")
     public Result deleteImgUrl(@RequestParam("imgurl")String imgUrl){
@@ -881,6 +960,7 @@ public class QinYanController {
 
 
     //获取一个应用
+    @ApiOperation(value = "获得一个应用记录",tags = "应用")
     @UserLoginToken
     @GetMapping("/getOneApp")
     public Result getEditApp(@RequestParam("id")int id){
@@ -892,6 +972,7 @@ public class QinYanController {
         }
     }
     //保存编辑应用，仅名称
+    @ApiOperation(value = "编辑一个应用（仅名称）",tags = "应用")
     @UserLoginToken
     @PutMapping("/putAppName")
     public Result putAppName(@RequestParam("id")int id,@RequestParam("editName")String editName){
@@ -901,6 +982,7 @@ public class QinYanController {
         return Result.sucess();
     }
     //保存编辑应用，所有信息
+    @ApiOperation(value = "编辑一个应用（全信息）",tags = "应用")
     @UserLoginToken
     @PutMapping("/saveEditApp")
     public Result putAllApp(@RequestBody App app,@RequestParam("oldImgName")String oldImg,@RequestParam("userId")int id){
@@ -931,6 +1013,7 @@ public class QinYanController {
     /*==========================================  上传    ====================================================*/
 
     //
+    @ApiOperation(value = "富文本图片上传实现",tags = "详情")
     @UserLoginToken
     @RequestMapping("/uploadDetailImg")
     public Result returnDetailImgUrl(@RequestParam("pic") MultipartFile picture,HttpServletRequest request){
@@ -966,6 +1049,7 @@ public class QinYanController {
 
 
     //图片上传
+    @ApiOperation(value = "壁纸上传实现",tags = "壁纸")
     @UserLoginToken
     @RequestMapping("/uploadImg")
     public Result uploadImg(@RequestParam("picture") MultipartFile picture,HttpServletRequest request){
@@ -999,6 +1083,7 @@ public class QinYanController {
 
     }
     //修改图片，上传
+    @ApiOperation(value = "富文本图片编辑",tags = "详情")
     @UserLoginToken
     @RequestMapping("/editImg")
     public Result editUploadImg(@RequestParam("editImage") MultipartFile editImage,HttpServletRequest request){
@@ -1033,6 +1118,7 @@ public class QinYanController {
     }
 
     //视频上传
+    @ApiOperation(value = "视频上传实现",tags = "视频")
     @UserLoginToken
     @RequestMapping("/uploadVideo")
     public Result uploadVideo(@RequestParam("video") MultipartFile video,HttpServletRequest request){

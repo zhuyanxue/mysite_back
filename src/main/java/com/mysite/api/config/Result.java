@@ -1,10 +1,13 @@
 package com.mysite.api.config;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
+import springfox.documentation.annotations.ApiIgnore;
 
 /*
 api返回结果封装
  */
+@ApiModel("返回给前端的统一封装结果类")
 @Data
 public class Result {
     public static String SUCCESS_CODE="0000";//成功

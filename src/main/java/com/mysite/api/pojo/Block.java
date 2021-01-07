@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
+//模块
 @Entity
 @Table(name="block")
 @Data

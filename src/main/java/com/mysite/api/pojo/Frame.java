@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
+//导航
 @Entity
 @Table(name="frame")
 @Data

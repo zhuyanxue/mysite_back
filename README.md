@@ -4,16 +4,104 @@ mysite网站后端接口，由springboot实现。
 # quickStart
 
 # elasticsearch
->###功能：用于网站内容的查询。使用ik分词器，对搜索结果进行高亮显示。
-####实现：
+>####功能：用于网站内容的查询。使用ik分词器，对搜索结果进行高亮显示。
+
+>####实现：
 1、 根据maven引入的依赖，官网下载对应的elasticsearch版本（6.8.3），解压——》下载Head插件——》es进行跨域配置——》下载ik分词器
 ，放到插件包下。——》测试head插件和ik分词器。  
-2、springboot集成elasticsearch  
-（1）编写ElasticSearch配置类。  
-（2）对Detail实体类进行相关注解：@document，@filed。  
-（3）接口DetailESDao继承ElasticsearchRepository，实现es基本操作。  
-（4）在启动类ApiApplication，指明dao和es对应包。  
-（5）在DetailService注入高级客户端RestHighLevelClient、detailESDao接口。  
-（6）前端查询调用DetailService的deleteAndGet方法，先将索引中的数据删除，再重新插入，避免es数据重复。  
-（7）高亮查询，通过DetailService的search方法实现：构建查询（注意使用matchQuery是实体配置的ik分词生效），构建高亮——》执行查询——》
+2、springboot集成elasticsearch   
+ * 引入依赖  
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+ </dependency>
+``` 
+* 编写ElasticSearch配置类。 
+```
+@Configuration
+public class ElasticSearch {
+
+    @Bean
+    public RestHighLevelClient restHighLevelClient(){
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("localhost", 9200, "http")));
+        return client;
+    }
+}
+```
+* 对Detail实体类进行相关注解：@document，@filed。  
+* 接口DetailESDao继承ElasticsearchRepository，实现es基本操作。  
+* 在启动类ApiApplication，指明dao和es对应包。  
+* 在DetailService注入高级客户端RestHighLevelClient、detailESDao接口。  
+* 前端查询调用DetailService的deleteAndGet方法，先将索引中的数据删除，再重新插入，避免es数据重复。  
+* 高亮查询，通过DetailService的search方法实现：构建查询（注意使用matchQuery是实体配置的ik分词生效），构建高亮——》执行查询——》
 解析结果（将原来结果的title进行高亮替换）。
+```
+        //1.构建查询
+        SearchRequest searchRequest = new SearchRequest("mysite");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
+        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+
+        //精准匹配
+        //TermQueryBuilder termQueryBuilder=QueryBuilders.termQuery("title",searchKey);,不会进行分词查询
+        //分词查询，需要用matchquery。
+        MatchQueryBuilder matchQueryBuilder=QueryBuilders.matchQuery("title",searchKey);
+        sourceBuilder.query(matchQueryBuilder);
+
+        //高亮
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title");
+
+        highlightBuilder.requireFieldMatch(false);//多高亮，设false
+        highlightBuilder.preTags("<em style='color:red;font-style: normal;'>");
+        highlightBuilder.postTags("</em>");
+        sourceBuilder.highlighter(highlightBuilder);
+
+        //2.执行搜索
+        searchRequest.source(sourceBuilder);
+        SearchResponse searchResponse=restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        //3.解析结果
+       ArrayList<Map<String,Object>> list=new ArrayList<>();
+
+        for (SearchHit hit : searchResponse.getHits().getHits()) {
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            HighlightField title = highlightFields.get("title");
+
+            //原来的结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            //替换字段
+            if (title != null) {
+                Text[] fragments = title.fragments();
+                String newTitle = "";
+                for (Text fragment : fragments) {
+                    newTitle += fragment;
+                }
+                sourceAsMap.put("title", newTitle);
+            }
+
+            list.add(sourceAsMap);
+        }
+```
+#swagger 3.0
+>####功能：实时更新api接口文档
+
+>####实现：
+* 引入依赖  
+```
+<dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-boot-starter</artifactId>
+      <version>3.0.0</version>
+</dependency>
+```
+* 编写配置类Swagger
+
+
+* 访问接口文档地址  
+ swagger3访问地址：http://localhost:9090/mysite/swagger-ui/index.html

@@ -115,6 +115,7 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+
         <!-- 生成二维码 -->
         <dependency>
             <groupId>com.google.zxing</groupId>
@@ -138,6 +139,13 @@
             <groupId>com.sun.jna</groupId>
             <artifactId>jna</artifactId>
             <version>3.0.9</version>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
     </dependencies>

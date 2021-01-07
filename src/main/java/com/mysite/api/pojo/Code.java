@@ -1,6 +1,8 @@
 package com.mysite.api.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+//邮箱验证码
 @Entity
 @Table(name="code")
 @Data

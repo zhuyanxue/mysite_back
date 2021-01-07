@@ -23,7 +23,13 @@ public class CodeService {
       return   codeDao.findAll();
     }
 
+
+
     public Code findByIcode(String code){
         return codeDao.findByIcode(code);
+    }
+
+    public Code findById(int id){
+        return codeDao.findById(id);
     }
 }

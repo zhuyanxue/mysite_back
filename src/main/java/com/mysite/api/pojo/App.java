@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
+//应用
 @Entity
 @Table(name="app")
 @Data

@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
+//用户
 @Entity
 @Table(name="users")
 @Data   //get、set

@@ -12,6 +12,7 @@ elasticsearch配置类
 @Configuration
 public class ElasticSearch {
 
+    //当部署在linux上时，localhost要写为linux的ip地址
     @Bean
     public RestHighLevelClient restHighLevelClient(){
         RestHighLevelClient client = new RestHighLevelClient(

@@ -2,6 +2,8 @@ package com.mysite.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.oas.annotations.EnableOpenApi;
@@ -14,14 +16,19 @@ import java.util.ArrayList;
 
 
 @Configuration
-
 //开启swagger3
 @EnableOpenApi
 public class SwaggerConfig {
 
     @Bean
-    public Docket docket(){
+    public Docket docket(Environment environment){
+        //设置swagger只在开发环境下使用
+
+        Profiles profile= Profiles.of("dev");
+        boolean judge=environment.acceptsProfiles(profile);
+
         return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo())
+                .enable(judge)  //判断是否是开发环境
                 .groupName("青彦沐")
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.mysite.api.controller"))

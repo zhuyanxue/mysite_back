@@ -1,12 +1,18 @@
 # mysite_back
-mysite网站后端接口，由springboot实现。
+mysite网站后端接口，由springboot实现。访问地址：47.102.212.127（管理员测试账户：master,123456）
 
 # quickStart
+1 . 项目依赖于elasticsearch及ik分词器。
+* 下载elasticsearch 6.8.3，解压：https://www.elastic.co/cn/downloads/past-releases/elasticsearch-6-8-3
+* 下载ik分词器，并将其放到elasticsearch的plugin下：https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.8.3/elasticsearch-analysis-ik-6.8.3.zip  
 
+2 .数据库使用mysql，在mysql新建一个数据库：mysite。（在项目中，已配置了自动建表）  
+3 .运行项目。修改detail表的details字段为text类型（避免文本内容存不下）。  
+4 .访问（查看项目所有接口）：http://localhost:9090/mysite/swagger-ui/index.html  
 # elasticsearch
 >####功能：用于网站内容的查询。使用ik分词器，对搜索结果进行高亮显示。
 
->####实现：
+>####实现
 1、 根据maven引入的依赖，官网下载对应的elasticsearch版本（6.8.3），解压——》下载Head插件——》es进行跨域配置——》下载ik分词器
 ，放到插件包下。——》测试head插件和ik分词器。  
 2、springboot集成elasticsearch   
@@ -21,7 +27,7 @@ mysite网站后端接口，由springboot实现。
 ```
 @Configuration
 public class ElasticSearch {
-
+    /当部署在linux上时，localhost要写为linux的ip地址
     @Bean
     public RestHighLevelClient restHighLevelClient(){
         RestHighLevelClient client = new RestHighLevelClient(
@@ -101,7 +107,54 @@ public class ElasticSearch {
 </dependency>
 ```
 * 编写配置类Swagger
+```
+public class SwaggerConfig {
 
+    @Bean
+    public Docket docket(Environment environment){
+        //设置swagger只在开发环境下使用
 
+        Profiles profile= Profiles.of("dev");
+        boolean judge=environment.acceptsProfiles(profile);
+
+        return new Docket(DocumentationType.OAS_30).apiInfo(apiInfo())
+                .enable(judge)  //判断是否是开发环境
+                .groupName("青彦沐")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.mysite.api.controller"))
+                .build();
+    }
+
+    /*
+    页面信息
+     */
+    private ApiInfo apiInfo(){
+        Contact contact=new Contact("青彦沐","https://space.bilibili.com/100036156","1789204734@qq.com");
+        return new ApiInfo(
+                "mysite后端接口文档" ,
+                "静以修身，俭以养德。",
+                "v1.0",
+                "https://space.bilibili.com/100036156",
+                contact,
+                "Apache 2.0",
+                "http://www.apache.org/licenses/LICENSE-2.0",
+                new ArrayList()
+        );
+    }
+}
+```
 * 访问接口文档地址  
- swagger3访问地址：http://localhost:9090/mysite/swagger-ui/index.html
+ swagger3访问地址：http://localhost:9090/mysite/swagger-ui/index.html  
+ 
+ ## Docker部署项目到linux
+ >### 修改配置
+ * 让生产环境配置文件生效
+```
+#指定生效配置文件
+spring.profiles.active=prod
+```
+* 修改elasticsearch配置类Elasticsearch，指定ip地址。
+```
+ new HttpHost("47.102.212.127", 9200, "http")));
+```
+* 使用maven打包测试，具体过程：https://blog.csdn.net/qq_33813721/article/details/112307821

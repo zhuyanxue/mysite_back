@@ -768,7 +768,7 @@ public class QinYanController {
 
 
             } catch (Exception e) {
-                logger.error("邮件发送失败", e.getMessage());
+                //logger.error("邮件发送失败", e.getMessage());
                 e.printStackTrace();
             }
             //对验证码加密保存到库
@@ -1145,7 +1145,7 @@ public class QinYanController {
             }
             String fileUrl=retrunUrl;
             fileUrl = fileUrl + request.getContextPath() + "/files/" + fileName;
-            logger.info("fileUrl:" + fileUrl);
+           // logger.info("fileUrl:" + fileUrl);
             return new Result("0000","上成功",fileUrl);
         }else{
             return Result.fail("上传失败，请确保文件是视频文件！");
